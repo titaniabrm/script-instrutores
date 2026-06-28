@@ -9,22 +9,41 @@
    (Authentication > Sign-in method). Ver SECURITY.md. */
 let _authPromise = null;
 function garantirAuth() {
-  try {
-    if (!firebase || !firebase.auth) return Promise.resolve(null);
-  } catch (e) { return Promise.resolve(null); }
   if (_authPromise) return _authPromise;
+  // Resolve a referência do SDK de Auth de forma defensiva (pode falhar
+  // se firebase-auth-compat não carregou ou se nenhum app foi inicializado).
+  var auth = null;
+  try {
+    if (typeof firebase === 'undefined' || !firebase.auth) return Promise.resolve(null);
+    if (typeof _fbApp !== 'undefined' && _fbApp && typeof _fbApp.auth === 'function') {
+      auth = _fbApp.auth();
+    } else {
+      auth = firebase.auth();
+    }
+  } catch (e) {
+    console.info('[CGEx] Auth indisponível:', e && (e.code || e.message));
+    return Promise.resolve(null);
+  }
   _authPromise = new Promise(function (resolve) {
     var feito = false;
     function pronto(v) { if (!feito) { feito = true; resolve(v); } }
     // Nunca trava o carregamento do app: resolve após 4s no máximo
     var timer = setTimeout(function () { pronto(null); }, 4000);
-    var auth = firebase.auth();
     if (auth.currentUser) { clearTimeout(timer); pronto(auth.currentUser); return; }
     var off = auth.onAuthStateChanged(function (u) {
       if (u) { clearTimeout(timer); if (off) off(); pronto(u); }
     });
     auth.signInAnonymously().catch(function (err) {
-      console.warn('signInAnonymously falhou (ative Anonymous no console):', err.code || err);
+      // 'auth/configuration-not-found' = Anonymous Auth ainda não ativado.
+      // Não é fatal enquanto as regras não exigirem auth — só avisa 1 vez por sessão.
+      if (!window._cgexAuthAvisado) {
+        window._cgexAuthAvisado = true;
+        if (err && err.code === 'auth/configuration-not-found') {
+          console.info('[CGEx] Auth Anonymous não está habilitado no console Firebase. Ative em Authentication > Sign-in method antes de publicar firestore.rules. (Veja SECURITY.md)');
+        } else {
+          console.warn('[CGEx] signInAnonymously falhou:', err && (err.code || err.message || err));
+        }
+      }
       clearTimeout(timer); pronto(null);
     });
   });

@@ -85,6 +85,8 @@ function iniciarListenerFirebase() {
         renderizarListaRGBEm('nomes-instrutores-login');
         renderizarListaRGBEm('nomes-instrutores-criar');
       }
+      // Re-aplica notas/blocos sempre que a config muda em tempo real
+      if (typeof aplicarNotasPastas === 'function') { try { aplicarNotasPastas(); } catch(e){} }
     }
   });
 }
@@ -1317,10 +1319,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   ir('tela-oauth-loading');
   atualizarLoading('Carregando...', 'Conectando ao servidor.');
 
-  // Login anônimo do Firebase antes de tocar no Firestore (exigido pelas regras)
-  if (typeof garantirAuth === 'function') {
-    try { await garantirAuth(); } catch(e) { console.warn('Auth anônima indisponível:', e); }
-  }
+  // Login anônimo do Firebase em background (necessário só quando as regras estiverem ativas).
+  // Não bloqueia: o Firestore funciona sem auth enquanto as regras não exigirem.
+  if (typeof garantirAuth === 'function') { try { garantirAuth(); } catch(e) {} }
 
   var params = new URLSearchParams(window.location.search);
 

@@ -53,7 +53,7 @@
 
 /* ── Mural de notificações ─────────────────────────────────────── */
 .mural-btn {
-  position: fixed; bottom: 24px; right: 24px; z-index: 9100;
+  position: fixed; bottom: 26px; right: 96px; z-index: 9100;
   width: 54px; height: 54px; border-radius: 50%;
   background: var(--card); border: 1px solid var(--borda);
   box-shadow: 0 10px 30px rgba(0,0,0,.5); cursor: pointer;
@@ -68,7 +68,7 @@
   display: flex; align-items: center; justify-content: center;
 }
 .mural-painel {
-  position: fixed; bottom: 88px; right: 24px; z-index: 9100;
+  position: fixed; bottom: 92px; right: 24px; z-index: 9100;
   width: min(360px, calc(100vw - 32px)); max-height: 70vh;
   background: var(--card); border: 1px solid var(--borda); border-radius: 16px;
   box-shadow: 0 24px 60px rgba(0,0,0,.7); overflow: hidden;

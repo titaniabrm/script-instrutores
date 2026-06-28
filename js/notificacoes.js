@@ -109,6 +109,19 @@
       try { atualizarVisibilidadeMural(); } catch (e) {}
       return r;
     };
+    // Esconde o sino quando o painel admin está aberto (evita ficar atrás do overlay)
+    var origAbrirAdmin = window.abrirAdmin;
+    window.abrirAdmin = function () {
+      var btn = document.getElementById('mural-btn'); if (btn) btn.style.display = 'none';
+      window.fecharMural();
+      return (typeof origAbrirAdmin === 'function') ? origAbrirAdmin.apply(this, arguments) : undefined;
+    };
+    var origFecharAdmin = window.fecharAdmin;
+    window.fecharAdmin = function () {
+      var r = (typeof origFecharAdmin === 'function') ? origFecharAdmin.apply(this, arguments) : undefined;
+      try { atualizarVisibilidadeMural(); } catch (e) {}
+      return r;
+    };
 
     // Arquiva cada notificação urgente no mural
     var origSalvar = window.salvarNotificacaoUrgente;
