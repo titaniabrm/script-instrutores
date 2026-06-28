@@ -262,6 +262,26 @@ function voltarParaPastas() {
 /* ═══════════════════════════════════════════
    ROBLOX OAUTH PKCE
 ═══════════════════════════════════════════ */
+// Resolve o redirect_uri para o OAuth. Se o valor salvo no Firebase aponta
+// para um domínio diferente do atual (ex: hosting antigo), usa o domínio
+// atual para evitar redirecionar o usuário para o site antigo.
+function resolverRedirectUri() {
+  var atual = window.location.origin + window.location.pathname;
+  var salvo = (getConfig().redirectUri || '').trim();
+  if (!salvo) return atual;
+  try {
+    var u = new URL(salvo);
+    if (u.origin !== window.location.origin) {
+      console.info('[CGEx] redirectUri salvo (' + u.origin + ') é de outro domínio; usando o atual (' + window.location.origin + ').');
+      return atual;
+    }
+    return salvo;
+  } catch (e) {
+    // URL inválida no Firebase — fallback seguro
+    return atual;
+  }
+}
+
 async function iniciarOAuthRoblox() {
   var config = getConfig();
   if (!config.clientId) {
@@ -271,7 +291,7 @@ async function iniciarOAuthRoblox() {
   var codeVerifier = generateCodeVerifier();
   var codeChallenge = await generateCodeChallenge(codeVerifier);
   var state = generateState();
-  var redirectUri = config.redirectUri || (window.location.origin + window.location.pathname);
+  var redirectUri = resolverRedirectUri();
 
   // localStorage persiste mesmo após redirect para domínio externo e volta
   var modo = sessionStorage.getItem('cgex_oauth_modo') || 'entrar';
@@ -314,7 +334,7 @@ async function handleOAuthCallback(params) {
   atualizarLoading('Trocando código por token...', 'Autenticando com os servidores do Roblox.');
 
   var config = getConfig();
-  var redirectUri = config.redirectUri || (window.location.origin + window.location.pathname);
+  var redirectUri = resolverRedirectUri();
 
   var tokenData;
   try {
@@ -956,7 +976,28 @@ function carregarDadosAdmin() {
   renderizarAdminCargos();
 
   document.getElementById('cfg-client-id').value = config.clientId;
-  document.getElementById('cfg-redirect-uri').value = config.redirectUri || (window.location.origin + window.location.pathname);
+  var inpRedir = document.getElementById('cfg-redirect-uri');
+  inpRedir.value = config.redirectUri || (window.location.origin + window.location.pathname);
+  // Avisa se o redirectUri salvo aponta para outro domínio (ex.: hosting antigo)
+  var avisoRedir = document.getElementById('aviso-redirect-uri');
+  if (!avisoRedir) {
+    avisoRedir = document.createElement('div');
+    avisoRedir.id = 'aviso-redirect-uri';
+    avisoRedir.style.cssText = 'background:rgba(255,171,0,0.08);border:1px solid rgba(255,171,0,0.3);color:#ffd740;padding:10px 14px;border-radius:8px;font-size:13px;margin:8px 0 14px;display:none;';
+    inpRedir.parentNode.insertBefore(avisoRedir, inpRedir.nextSibling);
+  }
+  try {
+    var salvo = (config.redirectUri || '').trim();
+    if (salvo) {
+      var u = new URL(salvo);
+      if (u.origin !== window.location.origin) {
+        var atual = window.location.origin + window.location.pathname;
+        avisoRedir.innerHTML = '⚠️ <b>Redirect URI antigo detectado:</b> está apontando para <code>' + u.origin + '</code>. O sistema está usando automaticamente o domínio atual (<code>' + atual + '</code>) para o login. Atualize aqui e no Roblox Developer Console e clique em "Salvar OAuth".';
+        avisoRedir.style.display = 'block';
+        inpRedir.value = atual;
+      } else { avisoRedir.style.display = 'none'; }
+    } else { avisoRedir.style.display = 'none'; }
+  } catch (e) { avisoRedir.style.display = 'none'; }
   document.getElementById('cfg-group-id').value = config.groupId;
 
   var statusEl = document.getElementById('oauth-status-texto');
