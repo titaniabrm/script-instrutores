@@ -288,6 +288,15 @@ async function iniciarOAuthRoblox() {
     mostrarToast('⚠️ Configure o Client ID no painel admin.');
     return;
   }
+  // Debounce: evita disparar múltiplos OAuth em sequência (causa de rate limit)
+  var ultimo = parseInt(sessionStorage.getItem('cgex_oauth_ultimo') || '0', 10);
+  var agoraMs = Date.now();
+  if (agoraMs - ultimo < 8000) {
+    var resta = Math.ceil((8000 - (agoraMs - ultimo)) / 1000);
+    mostrarToast('⏳ Aguarde ' + resta + 's antes de tentar de novo.');
+    return;
+  }
+  sessionStorage.setItem('cgex_oauth_ultimo', String(agoraMs));
   var codeVerifier = generateCodeVerifier();
   var codeChallenge = await generateCodeChallenge(codeVerifier);
   var state = generateState();
@@ -315,6 +324,14 @@ async function iniciarOAuthRoblox() {
 
 async function handleOAuthCallback(params) {
   var code = params.get('code');
+
+  // Guarda contra reprocessamento (evita rate limit do Roblox por code repetido)
+  var codeJaProcessado = sessionStorage.getItem('cgex_oauth_code_proc');
+  if (code && codeJaProcessado === code) {
+    mostrarErroAuth('Este código já foi processado. Volte ao painel e tente entrar de novo.');
+    return;
+  }
+  if (code) sessionStorage.setItem('cgex_oauth_code_proc', code);
 
   // Lê tudo do localStorage (sobrevive ao redirect externo)
   var codeVerifier = localStorage.getItem('cgex_pkce_verifier') || '';
@@ -350,6 +367,11 @@ async function handleOAuthCallback(params) {
       })
     });
     if (!tokenResp.ok) {
+      if (tokenResp.status === 429) {
+        var retryAfter = parseInt(tokenResp.headers.get('Retry-After') || '60', 10);
+        mostrarErroAuth('🚦 Limite de tentativas do Roblox atingido. Aguarde ' + retryAfter + ' segundos e tente novamente. (Evite clicar em "Entrar" várias vezes seguidas.)');
+        return;
+      }
       var err = await tokenResp.json().catch(function() { return {}; });
       throw new Error(err.error_description || 'Falha ao obter token.');
     }
@@ -1369,6 +1391,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Se voltou do OAuth do Roblox (tem ?code= na URL)
   if (params.has('code')) {
     atualizarLoading('Autenticando...', 'Processando retorno do Roblox.');
+    // Limpa a URL ANTES do processamento — se o usuário recarregar a página
+    // durante o callback, o code não será reutilizado (causa de rate limit).
+    window.history.replaceState({}, '', window.location.pathname);
     await carregarConfigInicial(4000);
     iniciarListenerFirebase();
     try {
@@ -1376,7 +1401,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch(e) {
       mostrarErroAuth('Erro inesperado: ' + e.message);
     }
-    window.history.replaceState({}, '', window.location.pathname);
     return;
   }
 

@@ -75,6 +75,20 @@ exports.salvarConfig = functions.https.onCall(async (data, context) => {
 ```
 E nas regras: `match /config/main { allow write: if false; }` (só o Admin SDK grava).
 
+### c.1) ⚠️ Chave da API Anthropic exposta no client (IA CGEx)
+`js/app.js` (`cgexChamarClaude`) chama `https://api.anthropic.com/v1/messages` **direto do
+navegador**, com `x-api-key` hardcoded (hoje um placeholder). Isso é diferente da `apiKey`
+do Firebase: a chave da Anthropic é um segredo de verdade — se você colar uma chave real
+aqui, **qualquer visitante do site pode abrir o DevTools, copiá-la e gastar seu crédito**.
+Além disso, a API da Anthropic bloqueia chamadas diretas do browser por padrão (CORS),
+então mesmo com a chave certa a IA provavelmente não vai responder sem o header
+`anthropic-dangerous-direct-browser-access` (não recomendado em produção).
+
+**Correção recomendada:** mover a chamada para uma Cloud Function/endpoint serverless:
+o browser manda só a pergunta, a função (com a chave guardada em variável de ambiente do
+servidor) chama a Anthropic e devolve a resposta. Nunca coloque uma chave de API real em
+código que vai para o navegador do usuário.
+
 ### c) Content-Security-Policy
 Para endurecer contra XSS, adicione em `vercel.json` (teste antes — o app usa
 estilos/handlers inline e Firebase/Fonts via CDN):

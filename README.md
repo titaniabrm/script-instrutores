@@ -17,13 +17,19 @@ Single Page Application estática, com backend no **Firebase Firestore**.
 ├── css/
 │   └── styles.css          # Todo o estilo do painel
 ├── js/
-│   ├── app.js              # Núcleo: Firebase, auth, admin, pastas
+│   ├── app.js              # Núcleo: Firebase, auth, OAuth Roblox, admin, pastas
 │   ├── seguranca.js        # Hash forte (PBKDF2) + login anônimo + níveis de admin
 │   ├── busca.js            # Busca/filtro no Material de Apoio
 │   ├── navegacao.js        # Breadcrumb + indicador de progresso
 │   ├── notificacoes.js     # Mural de notificações (histórico)
 │   ├── auditoria.js        # Log de auditoria + histórico de config
-│   └── admin-conteudo.js   # Edição/adição de conteúdo das pastas pelo admin
+│   ├── admin-conteudo.js   # Edição/adição de conteúdo das pastas pelo admin
+│   ├── admin-sessao.js     # Bloqueio após tentativas erradas + expiração de sessão
+│   ├── banimentos.js       # Histórico de banimentos com motivo/evidência
+│   ├── notif-agenda.js     # Agendamento de notificação urgente
+│   ├── cargos-dnd.js       # Cargos por drag-and-drop (hierarquia visual)
+│   ├── ia-historico.js     # Histórico de conversas da IA + contexto por pasta
+│   └── a11y.js             # Acessibilidade (aria-labels, navegação por teclado)
 ├── firestore.rules         # Regras de segurança do Firestore
 ├── firebase.json           # Config do Firebase (rules + hosting opcional)
 ├── vercel.json             # Config de deploy na Vercel (headers de segurança)
@@ -95,6 +101,14 @@ git push -u origin main
 | Auditoria de ações | aba "Auditoria" no admin |
 | Histórico de config | aba "Histórico" no admin |
 | Editar/adicionar conteúdo | aba "Conteúdo" no admin |
+| Cargos por drag-and-drop | aba "Instrutores → Cargos dos Instrutores" |
+| Histórico de banimentos com motivo | aba "Banidos" no admin |
+| Agendar notificação urgente | aba "Notificação Urgente" no admin (campo "Agendar para") |
+| Bloqueio após 3 tentativas erradas | tela de login do admin (5 min de espera) |
+| Sessão de admin expira em 30 min | aviso aparece 2 min antes, com botão "Continuar" |
+| Histórico de conversas da IA | botão 📜 na pasta "IA CGEx" |
+| Perguntar à IA sobre uma pasta | botão 🤖 no topo das pastas de procedimento |
+| Acessibilidade | skip link, navegação por teclado, aria-labels |
 
 ---
 

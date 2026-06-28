@@ -72,6 +72,20 @@ service cloud.firestore {
       allow write: if autenticado();
     }
 
+    // ---- Histórico de banimentos (com motivo/evidência) — imutável,
+    //      só "status/desbanidoPor/desbanidoEm" mudam via update ----
+    match /banimentos/{docId} {
+      allow read:   if autenticado();
+      allow create: if autenticado();
+      allow update: if autenticado();
+      allow delete: if false;
+    }
+
+    // ---- Conversas da IA por usuário (histórico pessoal) ----
+    match /ia_conversas/{nick} {
+      allow read, write: if autenticado();
+    }
+
     // ---- Nega todo o resto ----
     match /{document=**} {
       allow read, write: if false;
