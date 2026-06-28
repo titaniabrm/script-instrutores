@@ -1,0 +1,24 @@
+# Dependências
+node_modules/
+
+# Vercel
+.vercel/
+
+# Firebase
+.firebase/
+firebase-debug.log
+*-debug.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / tooling
+.vscode/
+.idea/
+.claude/launch.json
+
+# Backup do monólito original (mantido localmente, fora do repositório)
+index-6-1.html
+*.bak

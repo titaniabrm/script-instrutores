@@ -1,0 +1,80 @@
+rules_version = '2';
+
+// ════════════════════════════════════════════════════════════════
+//  Regras de segurança do Firestore — Painel CGEx
+//  Projeto: cgex-painel
+//
+//  IMPORTANTE: estas regras exigem que o app esteja autenticado.
+//  O painel usa LOGIN ANÔNIMO do Firebase (signInAnonymously) que é
+//  feito automaticamente ao abrir o site. Você PRECISA habilitar isso:
+//
+//    Console Firebase > Authentication > Sign-in method >
+//    Anonymous > Ativar
+//
+//  Sem isso, o app não conseguirá ler/gravar nada. Veja SECURITY.md.
+// ════════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    // Limita o tamanho de strings para evitar abuso/spam de gravação.
+    function strOk(v, max) {
+      return !(v is string) || v.size() <= max;
+    }
+
+    // ---- Configuração principal (lida por todos os usuários logados) ----
+    match /config/main {
+      allow read: if autenticado();
+      // Sem backend não há como provar identidade de admin nas regras.
+      // Mitigação: exige sessão autenticada + limita quantidade de campos.
+      // Proteção forte de verdade = Cloud Function (ver SECURITY.md).
+      allow write: if autenticado()
+                   && request.resource.data.keys().size() <= 40;
+    }
+
+    // ---- Senhas dos instrutores (1 hash por nick) ----
+    match /senhas_instrutores/{nick} {
+      allow read: if autenticado();
+      allow create, update: if autenticado()
+                   && request.resource.data.keys().hasOnly(
+                        ['hash', 'nick', 'criadoEm', 'atualizadoEm', 'algo'])
+                   && strOk(request.resource.data.hash, 256);
+      allow delete: if false;
+    }
+
+    // ---- Auditoria de ações (append-only / imutável) ----
+    match /auditoria/{docId} {
+      allow read:   if autenticado();
+      allow create: if autenticado();
+      allow update, delete: if false;
+    }
+
+    // ---- Histórico de alterações de config (append-only / imutável) ----
+    match /config_historico/{docId} {
+      allow read:   if autenticado();
+      allow create: if autenticado();
+      allow update, delete: if false;
+    }
+
+    // ---- Mural de notificações ----
+    match /notificacoes/{docId} {
+      allow read:  if autenticado();
+      allow write: if autenticado();
+    }
+
+    // ---- Conteúdo editável das pastas ----
+    match /conteudo/{docId} {
+      allow read:  if autenticado();
+      allow write: if autenticado();
+    }
+
+    // ---- Nega todo o resto ----
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

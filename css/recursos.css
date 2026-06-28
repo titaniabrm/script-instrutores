@@ -1,0 +1,118 @@
+/* ═══════════════════════════════════════════════════════════════
+   RECURSOS ADICIONAIS — busca, breadcrumb, progresso, mural,
+   auditoria e blocos de conteúdo. Usa as variáveis do tema.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Busca ─────────────────────────────────────────────────────── */
+.busca-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card2); border: 1px solid var(--borda);
+  border-radius: 12px; padding: 4px 14px; margin: 0 auto 22px;
+  max-width: 620px; transition: border-color .2s;
+}
+.busca-box:focus-within { border-color: var(--verde); }
+.busca-icone { font-size: 16px; opacity: .8; }
+.busca-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--texto); font-family: 'Inter', sans-serif; font-size: 14px;
+  padding: 12px 0;
+}
+.busca-input::placeholder { color: var(--cinza); }
+.busca-limpar {
+  background: transparent; border: none; color: var(--cinza);
+  font-size: 16px; cursor: pointer; padding: 4px 6px; border-radius: 6px;
+}
+.busca-limpar:hover { color: var(--perigo); }
+.busca-sem-resultado {
+  text-align: center; color: var(--cinza); font-size: 14px;
+  padding: 30px 16px;
+}
+
+/* ── Breadcrumb ────────────────────────────────────────────────── */
+.breadcrumb-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  max-width: 1100px; margin: 0 auto; padding: 14px 24px 0;
+  font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600;
+}
+.breadcrumb-bar .bc-link { color: var(--verde); cursor: pointer; text-decoration: none; }
+.breadcrumb-bar .bc-link:hover { text-decoration: underline; }
+.breadcrumb-bar .bc-sep { color: var(--cinza); }
+.breadcrumb-bar .bc-atual { color: var(--texto); }
+
+/* ── Barra de progresso de leitura ─────────────────────────────── */
+.progresso-leitura {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  background: transparent; z-index: 9000; opacity: 0; transition: opacity .3s;
+  pointer-events: none;
+}
+.progresso-leitura-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--verde), var(--azul));
+  transition: width .08s linear;
+}
+
+/* ── Mural de notificações ─────────────────────────────────────── */
+.mural-btn {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9100;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--card); border: 1px solid var(--borda);
+  box-shadow: 0 10px 30px rgba(0,0,0,.5); cursor: pointer;
+  font-size: 22px; display: none; align-items: center; justify-content: center;
+  transition: transform .15s, border-color .2s;
+}
+.mural-btn:hover { transform: translateY(-2px); border-color: var(--verde); }
+.mural-badge {
+  position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px;
+  padding: 0 5px; border-radius: 10px; background: var(--perigo); color: #fff;
+  font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.mural-painel {
+  position: fixed; bottom: 88px; right: 24px; z-index: 9100;
+  width: min(360px, calc(100vw - 32px)); max-height: 70vh;
+  background: var(--card); border: 1px solid var(--borda); border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.7); overflow: hidden;
+  display: flex; flex-direction: column;
+  transform: translateY(20px) scale(.96); opacity: 0; pointer-events: none;
+  transition: transform .2s, opacity .2s;
+}
+.mural-painel.aberto { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+.mural-cab {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; border-bottom: 1px solid var(--borda);
+  font-family: 'Rajdhani', sans-serif; font-weight: 700; color: #fff; font-size: 16px;
+}
+.mural-x { background: transparent; border: none; color: var(--cinza); font-size: 16px; cursor: pointer; }
+.mural-x:hover { color: var(--perigo); }
+.mural-lista { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.mural-item { background: var(--card2); border-radius: 8px; padding: 10px 12px; }
+.mural-item-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.mural-item-titulo { font-family: 'Rajdhani', sans-serif; font-weight: 700; color: #fff; font-size: 14px; }
+.mural-item-data { color: var(--cinza); font-size: 11px; white-space: nowrap; }
+.mural-item-msg { color: var(--texto); font-size: 13px; line-height: 1.5; margin-top: 4px; }
+.mural-vazio { color: var(--cinza); font-size: 13px; text-align: center; padding: 24px; }
+
+/* ── Auditoria / Histórico ─────────────────────────────────────── */
+.aud-lista { display: flex; flex-direction: column; gap: 8px; max-height: 460px; overflow-y: auto; }
+.aud-item { display: flex; gap: 10px; background: var(--card2); border: 1px solid var(--borda); border-radius: 8px; padding: 10px 12px; }
+.aud-ic { font-size: 16px; }
+.aud-corpo { flex: 1; min-width: 0; }
+.aud-linha1 { color: var(--texto); font-size: 13px; }
+.aud-linha2 { color: var(--cinza); font-size: 12px; margin-top: 2px; }
+.aud-det summary { color: var(--azul); font-size: 12px; cursor: pointer; margin-top: 6px; }
+.aud-det pre { white-space: pre-wrap; word-break: break-all; background: #050708; border: 1px solid var(--borda); border-radius: 6px; padding: 8px; font-size: 11px; color: var(--texto); margin-top: 6px; }
+.aud-vazio { color: var(--cinza); font-size: 13px; padding: 16px; }
+
+/* ── Blocos de conteúdo (no topo das pastas) ───────────────────── */
+.conteudo-extra-wrap { max-width: 1100px; margin: 0 auto; padding: 0 4px; }
+.bloco-conteudo {
+  border-radius: 10px; padding: 14px 18px; margin: 0 0 12px;
+  font-size: 14px; line-height: 1.6;
+}
+.bloco-conteudo-tit { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+.bloco-admin-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card2); border: 1px solid var(--borda); border-radius: 8px; padding: 10px 12px;
+}
+.btn-bloco-rm { background: rgba(255,79,79,.12); border: 1px solid rgba(255,79,79,.35); color: #ff8080; border-radius: 7px; cursor: pointer; padding: 6px 10px; font-size: 13px; }
+.btn-bloco-rm:hover { background: rgba(255,79,79,.22); }
